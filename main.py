@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 # 🔧 Framework flag: sklearn | tensorflow | pytorch
-TRAINING_FRAMEWORK = "tensorflow"
+TRAINING_FRAMEWORK = "sklearn"
 
 load_dotenv()
 
@@ -103,7 +103,7 @@ def main():
     client.configure_preprocessing({
         "tokenizer": "nltk",
         "stopwords": True,
-        "reduction": "tfidf",  # Optional for NLP; skip or change for tabular
+        "reduction": "pca",  # Optional for NLP; skip or change for tabular
         "target_column": "RainTomorrow",
         "target_encoding": "auto"  # or dict, or "none" dict means like  {"ham": 0, "spam": 1}
 
@@ -150,7 +150,7 @@ def main():
 
     print("\n✅ Done! 🎉")
 
-    print("\n🧪 Preview:\n", initialization.get("preview").head())
+    # print("\n🧪 Preview:\n", initialization.get("preview").head())
 
 if __name__ == "__main__":
     main()
