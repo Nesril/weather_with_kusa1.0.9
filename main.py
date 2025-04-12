@@ -19,7 +19,7 @@ load_dotenv()
 # ✅ Framework-aware training factory
 def train_model_factory(framework="sklearn", model_class=None, fixed_params=None):
     fixed_params = fixed_params or {}
-
+    print("framework ",framework)
     if framework == "sklearn":
         def train_model(X, y, **params):
             sig = signature(model_class.__init__)
@@ -29,7 +29,7 @@ def train_model_factory(framework="sklearn", model_class=None, fixed_params=None
         return train_model
 
     elif framework == "tensorflow":
-        def train_model(X, y, **params):
+        def train_model(X, y, X_val=None, y_val=None, **params):
             model = tf.keras.Sequential([
                 tf.keras.layers.Input(shape=(X.shape[1],)),
                 tf.keras.layers.Dense(64, activation='relu'),
@@ -40,9 +40,15 @@ def train_model_factory(framework="sklearn", model_class=None, fixed_params=None
                 optimizer=params.get("optimizer", "adam"),
                 metrics=['accuracy']
             )
-            model.fit(X, y, epochs=params.get("epochs", 10), verbose=1)
+            model.fit(
+                X, y,
+                validation_data=(X_val, y_val) if X_val is not None and y_val is not None else None,
+                epochs=params.get("epochs", 10),
+                verbose=1
+            )
             return model
         return train_model
+
 
     elif framework == "pytorch":
 
@@ -59,15 +65,13 @@ def train_model_factory(framework="sklearn", model_class=None, fixed_params=None
             def forward(self, x):
                 return self.net(x)
 
-        def train_model(X, y, **params):
+        def train_model(X, y, X_val=None, y_val=None, **params):
             input_dim = X.shape[1]
             model = SimpleNN(input_dim)
             loss_fn = nn.BCELoss()
             optimizer = torch.optim.Adam(model.parameters(), lr=params.get("lr", 0.001))
 
-            X_tensor = torch.tensor(X.values, dtype=torch.float32)
-            y_tensor = torch.tensor(y.values.reshape(-1, 1), dtype=torch.float32)
-            loader = DataLoader(TensorDataset(X_tensor, y_tensor), batch_size=32, shuffle=True)
+            loader = DataLoader(TensorDataset(X, y), batch_size=32, shuffle=True)
 
             for epoch in range(params.get("epochs", 10)):
                 model.train()
@@ -80,6 +84,7 @@ def train_model_factory(framework="sklearn", model_class=None, fixed_params=None
 
             return model
         return train_model
+
 
     else:
         raise ValueError("Unsupported framework selected")
@@ -99,7 +104,9 @@ def main():
         "tokenizer": "nltk",
         "stopwords": True,
         "reduction": "tfidf",  # Optional for NLP; skip or change for tabular
-        "target_column": "RainTomorrow"
+        "target_column": "RainTomorrow",
+        "target_encoding": "auto"  # or dict, or "none" dict means like  {"ham": 0, "spam": 1}
+
     })
     client.run_preprocessing()
 
@@ -115,7 +122,11 @@ def main():
         hyperparams = {"epochs": 10, "lr": 0.001}
 
     print("🚀 Training model...")
-    client.train(user_train_func=train_model, hyperparams=hyperparams, target_column="RainTomorrow")
+    client.train(
+         user_train_func=train_model, 
+         hyperparams=hyperparams, target_column="RainTomorrow",
+         task_type="classification", framework=TRAINING_FRAMEWORK, 
+    )
 
     print("📈 Evaluating model...")
     results = client.evaluate()
