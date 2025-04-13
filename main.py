@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
 # 🔧 Framework flag: sklearn | tensorflow | pytorch
-TRAINING_FRAMEWORK = "sklearn"
+TRAINING_FRAMEWORK = "pytorch"
 
 load_dotenv()
 
@@ -100,10 +100,10 @@ def main():
     client.fetch_and_decrypt_batch(batch_size=500, batch_number=1)
 
     print("⚙️ Configuring preprocessing...")
-    client.configure_preprocessing({
+    client.configure_preprocessing({ 
         "tokenizer": "nltk",
         "stopwords": True,
-        "reduction": "pca",  # Optional for NLP; skip or change for tabular
+        "reduction": "tfidf",  # Optional for NLP; skip or change for tabular tfidf,pca or tfidf_pca
         "target_column": "RainTomorrow",
         "target_encoding": "auto"  # or dict, or "none" dict means like  {"ham": 0, "spam": 1}
 
@@ -154,3 +154,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+ 
+

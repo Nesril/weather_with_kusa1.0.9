@@ -4,8 +4,8 @@ import pandas as pd
 from kusa.client import SecureDatasetClient
 
 load_dotenv()
-model_path = "secure_model_sklearn.model"
-TRAINING_FRAMEWORK = "sklearn"
+model_path = "secure_model_pytorch.model"
+TRAINING_FRAMEWORK = "pytorch"
 
 load_dotenv()
 
